@@ -1,0 +1,93 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - develop
+      - release/*
+  pull_request:
+    branches:
+      - develop
+      - release/*
+
+jobs:
+  build-and-scan:
+    name: Build & Scan Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        run: |
+          echo "Building docker iamge"
+
+      - name: Run Code Scanning (Snyk)
+        run: |
+          echo "Code scanning"
+
+  deploy-dev:
+    name: Deploy to Dev
+    runs-on: ubuntu-latest
+    needs: build-and-scan
+    if: github.ref == 'refs/heads/develop'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Fetch k8s kubeconfig of dev's cluster
+        run: |
+          echo "Getting kubeconfig (dev)"
+
+      - name: Deploy to Dev
+        run: |
+          echo "Deploying to dev env"
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-and-scan
+    if: startsWith(github.ref, 'refs/heads/release/')
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name:  Fetch k8s kubeconfig of staging's cluster
+        run: |
+          echo "Getting kubeconfig (staging)"
+
+      - name: Deploy to Staging
+        run: |
+          echo "Deploying to Staging env"
+
+  approval-uat:
+    name: Manual Approval for UAT
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: startsWith(github.ref, 'refs/heads/release/')
+    steps:
+      - name: Wait for Manual Approval
+        uses: hmarr/auto-approve-action@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+  deploy-uat:
+    name: Deploy to UAT
+    runs-on: ubuntu-latest
+    needs: approval-uat
+    if: startsWith(github.ref, 'refs/heads/release/')
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Fetch k8s kubeconfig of UAT's cluster
+        run: |
+          echo "Getting kubeconfig (UAT)"
+
+      - name: Deploy to UAT
+        run: |
+          echo "Deploying to UAT env"
