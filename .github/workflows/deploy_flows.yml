@@ -69,11 +69,17 @@ jobs:
     needs: deploy-staging
     if: startsWith(github.ref, 'refs/heads/releases/')
     steps:
-      - name: Wait for Manual Approval
-        uses: hmarr/auto-approve-action@v3
+      - uses: trstringer/manual-approval@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+          secret: ${{ github.TOKEN }}
+          approvers: nminhquang
+          minimum-approvals: 1
+          issue-title: "Deploying to UAT"
+          issue-body: "Please approve or deny the deployment"
+          exclude-workflow-initiator-as-approver: false
+          fail-on-denial: true
+          additional-approved-words: ''
+          additional-denied-words: ''
 
   deploy-uat:
     name: Deploy to UAT
