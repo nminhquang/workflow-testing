@@ -23,7 +23,9 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          echo "Building docker image"
+          short_sha=$(echo ${{ github.sha }} | cut -c1-7)
+          release=$(echo ${{ github.ref }} | cut -d "/" -f2)
+          echo "Building docker image ${{ github.repository }}:$release-$short_sha"
 
       - name: Run Code Scanning (Snyk)
         run: |
@@ -66,7 +68,9 @@ jobs:
 
       - name: Deploy to Staging
         run: |
-          echo "Deploying to uat env"
+          short_sha=$(echo ${{ github.sha }} | cut -c1-7)
+          release=$(echo ${{ github.ref }} | cut -d "/" -f2)
+          echo "Deploying release: ${release}-${short_sha} to uat env"
           echo "Getting environment variables"
           env
 
@@ -88,6 +92,8 @@ jobs:
 
       - name: Deploy to PROD
         run: |
-          echo "Deploying to PROD env"
+          short_sha=$(echo ${{ github.sha }} | cut -c1-7)
+          release=$(echo ${{ github.ref }} | cut -d "/" -f2)
+          echo "Deploying release: ${release}-${short_sha} to prod env"
           echo "Getting environment variables"
           env
