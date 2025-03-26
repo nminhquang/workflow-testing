@@ -93,4 +93,3 @@ jobs:
           release=$(echo ${{ github.ref }} | cut -d "/" -f3)
           echo "Deploying release: ${release}-${short_sha} to prod env"
           echo "Getting environment variables"
-          env
