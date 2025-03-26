@@ -23,9 +23,15 @@ jobs:
 
       - name: Build Docker Image
         run: |
+          
           short_sha=$(echo ${{ github.sha }} | cut -c1-7)
-          release=$(echo ${{ github.ref }} | cut -d "/" -f3)
-          echo "Building docker image ${{ github.repository }}:$release-$short_sha"
+          if [[ ${{ github.ref }} == "refs/heads/develop" ]]; then
+            image_tag=develop-$short_sha
+          else
+            release=$(echo ${{ github.ref }} | cut -d "/" -f4)
+            image_tag=${release}-${short_sha}
+          fi
+          echo "Building docker image ${{ github.repository }}:$image_tag"
 
       - name: Run Code Scanning (Snyk)
         run: |
@@ -46,8 +52,8 @@ jobs:
 
       - name: Deploy to Dev
         run: |
-          echo "Deploying to dev env"
-          env
+          short_sha=$(echo ${{ github.sha }} | cut -c1-7)
+          echo "Deploying to develop-$short_sha to dev env"
 
   deploy-uat:
     name: Deploy to UAT
@@ -66,7 +72,7 @@ jobs:
       - name: Deploy to UAT
         run: |
           short_sha=$(echo ${{ github.sha }} | cut -c1-7)
-          release=$(echo ${{ github.ref }} | cut -d "/" -f3)
+          release=$(echo ${{ github.ref }} | cut -d "/" -f4)
           echo "Deploying release: ${release}-${short_sha} to uat env"
           echo "Getting environment variables"
           env
@@ -90,6 +96,6 @@ jobs:
       - name: Deploy to PROD
         run: |
           short_sha=$(echo ${{ github.sha }} | cut -c1-7)
-          release=$(echo ${{ github.ref }} | cut -d "/" -f3)
+          release=$(echo ${{ github.ref }} | cut -d "/" -f4)
           echo "Deploying release: ${release}-${short_sha} to prod env"
           echo "Getting environment variables"
