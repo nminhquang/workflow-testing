@@ -25,7 +25,7 @@ jobs:
         run: |
           
           short_sha=$(echo ${{ github.sha }} | cut -c1-7)
-          if [[ ${{ github.ref }} == "refs/heads/develop" ]];
+          if [[ ${{ github.ref }} == "refs/heads/develop" ]]; then
             image_tag=develop-$short_sha
           else
             release=$(echo ${{ github.ref }} | cut -d "/" -f4)
