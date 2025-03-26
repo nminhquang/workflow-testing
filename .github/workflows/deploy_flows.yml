@@ -24,7 +24,7 @@ jobs:
       - name: Build Docker Image
         run: |
           short_sha=$(echo ${{ github.sha }} | cut -c1-7)
-          release=$(echo ${{ github.ref }} | cut -d "/" -f2)
+          release=$(echo ${{ github.ref }} | cut -d "/" -f3)
           echo "Building docker image ${{ github.repository }}:$release-$short_sha"
 
       - name: Run Code Scanning (Snyk)
@@ -43,8 +43,6 @@ jobs:
       - name: Fetch k8s kubeconfig of dev's cluster
         run: |
           echo "Getting kubeconfig (dev)"
-          echo "Getting environment variables"
-          env
 
       - name: Deploy to Dev
         run: |
@@ -63,13 +61,12 @@ jobs:
       - name:  Fetch k8s kubeconfig of UAT's cluster
         run: |
           echo "Getting kubeconfig (uat)"
-          echo "Getting environment variables"
-          env
 
-      - name: Deploy to Staging
+
+      - name: Deploy to UAT
         run: |
           short_sha=$(echo ${{ github.sha }} | cut -c1-7)
-          release=$(echo ${{ github.ref }} | cut -d "/" -f2)
+          release=$(echo ${{ github.ref }} | cut -d "/" -f3)
           echo "Deploying release: ${release}-${short_sha} to uat env"
           echo "Getting environment variables"
           env
@@ -93,7 +90,6 @@ jobs:
       - name: Deploy to PROD
         run: |
           short_sha=$(echo ${{ github.sha }} | cut -c1-7)
-          release=$(echo ${{ github.ref }} | cut -d "/" -f2)
+          release=$(echo ${{ github.ref }} | cut -d "/" -f3)
           echo "Deploying release: ${release}-${short_sha} to prod env"
           echo "Getting environment variables"
-          env
