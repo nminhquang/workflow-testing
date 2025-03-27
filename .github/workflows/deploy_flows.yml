@@ -14,6 +14,8 @@ jobs:
   build-and-scan:
     name: Build & Scan Code
     runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.build_image.outputs.image_tag }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -22,6 +24,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build Docker Image
+        id: build_image
         run: |
           
           short_sha=$(echo ${{ github.sha }} | cut -c1-7)
@@ -31,6 +34,7 @@ jobs:
             release=$(echo ${{ github.ref }} | cut -d "/" -f4)
             image_tag=${release}-${short_sha}
           fi
+          echo "image_tag=${image_tag}" >> $GITHUB_OUTPUT
           echo "Building docker image ${{ github.repository }}:$image_tag"
 
       - name: Run Code Scanning (Snyk)
@@ -52,8 +56,8 @@ jobs:
 
       - name: Deploy to Dev
         run: |
-          short_sha=$(echo ${{ github.sha }} | cut -c1-7)
-          echo "Deploying to develop-$short_sha to dev env"
+          
+          echo "Deploying to ${{ needs.build-and-scan.outputs.image_tag }} to dev env"
 
   deploy-uat:
     name: Deploy to UAT
@@ -71,9 +75,7 @@ jobs:
 
       - name: Deploy to UAT
         run: |
-          short_sha=$(echo ${{ github.sha }} | cut -c1-7)
-          release=$(echo ${{ github.ref }} | cut -d "/" -f4)
-          echo "Deploying release: ${release}-${short_sha} to uat env"
+          echo "Deploying release: ${{ needs.build-and-scan.outputs.image_tag }} to uat env"
           echo "Getting environment variables"
           env
 
@@ -91,11 +93,7 @@ jobs:
         run: |
           echo "Getting kubeconfig (PROD)"
           echo "Getting environment variables"
-          env
 
       - name: Deploy to PROD
         run: |
-          short_sha=$(echo ${{ github.sha }} | cut -c1-7)
-          release=$(echo ${{ github.ref }} | cut -d "/" -f4)
-          echo "Deploying release: ${release}-${short_sha} to prod env"
-          echo "Getting environment variables"
+          echo "Deploying release: ${{ needs.build-and-scan.outputs.image_tag }} to prod env"
