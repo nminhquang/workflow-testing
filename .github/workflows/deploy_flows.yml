@@ -34,7 +34,7 @@ jobs:
             release=$(echo ${{ github.ref }} | cut -d "/" -f4)
             image_tag=${release}-${short_sha}
           fi
-          echo "image_tag=${image_tag}" >> $GITHUB_ENV
+          echo "image_tag=${image_tag}" >> $GITHUB_OUTPUT
           echo "Building docker image ${{ github.repository }}:$image_tag"
 
       - name: Run Code Scanning (Snyk)
